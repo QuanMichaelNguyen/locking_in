@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusTab — Unlock</title>
+  <link rel="stylesheet" href="unlock.css" />
+</head>
+<body>
+  <div class="card">
+    <div class="lock-icon">🔐</div>
+    <h1>Enter your PIN</h1>
+    <p class="sub">A PIN is required to unlock the session.</p>
+    <input id="pin-input" type="password" inputmode="numeric"
+           maxlength="8" placeholder="••••" autocomplete="off" autofocus />
+    <p id="error-msg" class="error hidden">Incorrect PIN. Try again.</p>
+    <button id="btn-submit">Unlock</button>
+    <button id="btn-cancel">Cancel</button>
+  </div>
+  <script src="unlock.js"></script>
+</body>
+</html>

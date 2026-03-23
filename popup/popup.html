@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FocusTab Locker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <span class="logo">
+      <span id="logo-dot" class="logo-dot"></span>
+      FocusTab Locker
+    </span>
+    <nav class="nav-tabs" id="nav-tabs">
+      <button class="nav-tab active" data-view="select">Session</button>
+      <button class="nav-tab" data-view="presets">Presets</button>
+      <button class="nav-tab" data-view="history">History</button>
+      <button class="nav-tab" data-view="settings">Settings</button>
+    </nav>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       VIEW: SELECT (idle setup)
+  ════════════════════════════════════════ -->
+  <div id="view-select" class="view">
+
+    <!-- Preset quick-load -->
+    <div class="row">
+      <select id="preset-picker" class="input-full">
+        <option value="">— Load a preset —</option>
+      </select>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="safetabs">Safe Tabs</button>
+      <button class="mode-tab" data-mode="blocklist">Blocklist</button>
+      <button class="mode-tab" data-mode="pomodoro">Pomodoro</button>
+    </div>
+
+    <!-- Safe Tabs panel -->
+    <div id="panel-safetabs" class="mode-panel">
+      <p class="label">Select Safe Tabs</p>
+      <ul id="tab-list"></ul>
+      <div class="row">
+        <label class="label" for="duration">Duration (min)</label>
+        <input id="duration" type="number" min="1" max="480" value="25" class="input-full" />
+      </div>
+    </div>
+
+    <!-- Blocklist panel -->
+    <div id="panel-blocklist" class="mode-panel hidden">
+      <p class="label">Block these domains</p>
+      <div class="domain-input-row">
+        <input id="domain-input" type="text" placeholder="youtube.com" class="input-flex" />
+        <button id="btn-add-domain" class="btn-icon">+</button>
+      </div>
+      <ul id="domain-list"></ul>
+      <div class="row">
+        <label class="label" for="bl-duration">Duration (min)</label>
+        <input id="bl-duration" type="number" min="1" max="480" value="25" class="input-full" />
+      </div>
+    </div>
+
+    <!-- Pomodoro panel -->
+    <div id="panel-pomodoro" class="mode-panel hidden">
+      <div class="pomo-grid">
+        <div>
+          <label class="label">Work (min)</label>
+          <input id="pomo-work" type="number" min="1" max="120" value="25" class="input-full" />
+        </div>
+        <div>
+          <label class="label">Break (min)</label>
+          <input id="pomo-break" type="number" min="1" max="60" value="5" class="input-full" />
+        </div>
+        <div>
+          <label class="label">Long break (min)</label>
+          <input id="pomo-long" type="number" min="1" max="60" value="15" class="input-full" />
+        </div>
+        <div>
+          <label class="label">Cycles</label>
+          <input id="pomo-cycles" type="number" min="1" max="12" value="4" class="input-full" />
+        </div>
+      </div>
+      <p class="label mt">Safe Tabs during work phase</p>
+      <ul id="pomo-tab-list"></ul>
+    </div>
+
+    <p id="error-msg" class="error hidden"></p>
+
+    <div class="action-row">
+      <button id="btn-start" class="btn btn-primary">Start Session</button>
+      <button id="btn-save-preset" class="btn btn-ghost">Save Preset</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       VIEW: ACTIVE (session running)
+  ════════════════════════════════════════ -->
+  <div id="view-active" class="view hidden">
+    <div id="phase-badge" class="phase-badge">Work</div>
+    <div id="countdown" class="countdown">--:--</div>
+    <div id="cycle-dots" class="cycle-dots hidden"></div>
+    <p id="session-meta" class="meta"></p>
+    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+    <button id="btn-unlock" class="btn btn-danger mt">Emergency Unlock</button>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       VIEW: PRESETS
+  ════════════════════════════════════════ -->
+  <div id="view-presets" class="view hidden">
+    <p class="label mb">Saved presets</p>
+    <ul id="presets-list"></ul>
+    <p id="presets-empty" class="muted hidden">No presets yet. Start a session and hit "Save Preset".</p>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       VIEW: HISTORY
+  ════════════════════════════════════════ -->
+  <div id="view-history" class="view hidden">
+    <div class="stats-row">
+      <div class="stat-box">
+        <span id="stat-streak" class="stat-num">0</span>
+        <span class="stat-label">day streak</span>
+      </div>
+      <div class="stat-box">
+        <span id="stat-total" class="stat-num">0h</span>
+        <span class="stat-label">total focus</span>
+      </div>
+      <div class="stat-box">
+        <span id="stat-sessions" class="stat-num">0</span>
+        <span class="stat-label">sessions</span>
+      </div>
+    </div>
+    <ul id="history-list"></ul>
+    <p id="history-empty" class="muted hidden">No sessions recorded yet.</p>
+    <button id="btn-clear-history" class="btn btn-ghost-sm mt">Clear history</button>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       VIEW: SETTINGS
+  ════════════════════════════════════════ -->
+  <div id="view-settings" class="view hidden">
+
+    <!-- PIN -->
+    <section class="settings-section">
+      <p class="settings-heading">PIN Protection</p>
+      <p class="muted">Require a PIN to use emergency unlock.</p>
+      <div id="pin-display" class="row mt">
+        <span id="pin-status" class="muted">No PIN set</span>
+        <button id="btn-set-pin" class="btn btn-ghost-sm ml">Set PIN</button>
+      </div>
+      <div id="pin-form" class="hidden mt">
+        <input id="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="Enter new PIN" class="input-full" />
+        <div class="row mt">
+          <button id="btn-save-pin" class="btn btn-primary-sm">Save</button>
+          <button id="btn-remove-pin" class="btn btn-ghost-sm ml">Remove PIN</button>
+          <button id="btn-cancel-pin" class="btn btn-ghost-sm ml">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="settings-section">
+      <p class="settings-heading">Scheduled Sessions</p>
+      <ul id="schedule-list"></ul>
+      <p id="schedule-empty" class="muted hidden">No schedules set.</p>
+      <div class="schedule-form mt">
+        <div class="row gap">
+          <input id="sched-time" type="time" value="09:00" class="input-flex" />
+          <select id="sched-preset" class="input-flex">
+            <option value="">Pick preset…</option>
+          </select>
+        </div>
+        <div class="day-row mt">
+          <label class="day-check"><input type="checkbox" value="mon" checked /> M</label>
+          <label class="day-check"><input type="checkbox" value="tue" checked /> T</label>
+          <label class="day-check"><input type="checkbox" value="wed" checked /> W</label>
+          <label class="day-check"><input type="checkbox" value="thu" checked /> T</label>
+          <label class="day-check"><input type="checkbox" value="fri" checked /> F</label>
+          <label class="day-check"><input type="checkbox" value="sat" /> S</label>
+          <label class="day-check"><input type="checkbox" value="sun" /> S</label>
+        </div>
+        <button id="btn-add-schedule" class="btn btn-ghost-sm mt">Add Schedule</button>
+      </div>
+    </section>
+
+    <!-- Sync info -->
+    <section class="settings-section">
+      <p class="settings-heading">Sync</p>
+      <p class="muted">Presets and settings sync across Chrome installs automatically via your Google account.</p>
+    </section>
+  </div>
+
+  <!-- Save-preset modal overlay -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <p class="settings-heading">Save Preset</p>
+      <input id="preset-name-input" type="text" placeholder="e.g. Deep Work" class="input-full mt" maxlength="40" />
+      <div class="row mt">
+        <button id="btn-confirm-preset" class="btn btn-primary-sm">Save</button>
+        <button id="btn-cancel-preset" class="btn btn-ghost-sm ml">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

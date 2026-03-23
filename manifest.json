@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "FocusTab Locker",
+  "version": "0.2.0",
+  "description": "Lock yourself to a set of tabs for a timed work session.",
+
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms",
+    "notifications",
+    "webNavigation"
+  ],
+
+  "host_permissions": ["<all_urls>"],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/unlocked_16.png",
+      "48": "icons/unlocked_48.png",
+      "128": "icons/unlocked_128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/unlocked_16.png",
+    "48": "icons/unlocked_48.png",
+    "128": "icons/unlocked_128.png"
+  },
+
+  "commands": {
+    "emergency_unlock": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "Command+Shift+P"
+      },
+      "description": "Emergency unlock — end the session immediately"
+    }
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["redirect/redirect.html", "unlock/unlock.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
